@@ -1,21 +1,17 @@
-import { Map } from 'immutable';
+import { Map, fromJS } from 'immutable';
+import { merge } from 'most';
 
-
-function collection(actions) {
-	return actions.merge().scan((prev, fn) => fn(prev), Map());
+function collection(base, actions) {
+	return merge(actions).scan((prev, fn) => fn(prev), base);
 }
 
-export default function (actions) {
-	var todos = collection([
+export default function (actions, base) {
+	return collection(base ? fromJS(base) : Map(), [
         actions.create
-            .map((todo) => this.set(todo.id, todo)),
+            .map((todo) => (todos) => todos.set(todo.id, todo)),
         actions.destroy
-            .map((todo) => this.delete(todo.id)),
+            .map((todo) => (todos) => todos.delete(todo.id)),
         actions.update
-            .map((todo) => this.set(todo.id, todo))
-    ]);
-
-	return {
-        getAll: todos
-    };
+            .map((todo) => (todos) => todos.set(todo.id, todo))
+    ]).map(entry => entry.toJS());
 }

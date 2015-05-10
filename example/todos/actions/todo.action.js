@@ -10,23 +10,25 @@ function create(props) {
 	return Todo(props);
 }
 
-export default {
-	list: action(() => {
-		return Promise.resolve([
-			Todo({}),
-			Todo({})
-		]);
-	}),
-	get: action((id) => {
-		return Promise.resolve(Todo({}));
-	}),
-	create: action((props) => {
-		return Promise.resolve(create(props));
-	}),
-	destroy: action((id) => {
-		return Promise.resolve(id);
-	}),
-	update: action((props) => {
-		return Promise.resolve(Todo(props));
-	})
-};
+export default function createActions() {
+	return {
+		list: action(() => {
+			return Promise.resolve([
+				Todo({}),
+				Todo({})
+			]);
+		}),
+		get: action((id) => {
+			return Promise.resolve(Todo({}));
+		}),
+		create: action((props) => {
+			return Promise.resolve(create(props));
+		}),
+		destroy: action((id) => {
+			return Promise.resolve(id);
+		}),
+		update: action((props) => {
+			return Promise.resolve(Todo(props));
+		})
+	};
+}

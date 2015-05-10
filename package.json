@@ -2,8 +2,10 @@
 	"name": "afflux",
 	"version": "0.1.0",
 	"author": "Izaak Schroeder <izaak.schroeder@gmail.com>",
+	"repository": "izaakschroeder/afflux",
 	"dependencies": {
-		"most": "^0.14.0"
+		"most": "izaakschroeder/most#baseless",
+		"lodash": "^3.8.0"
 	},
 	"devDependencies": {
 		"eslint": "^0.20.0",

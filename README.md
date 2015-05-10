@@ -14,6 +14,19 @@ Stores:
  * Domain specific - Encapsulate functionality specific to one area
 
 
+
+Render app.
+It basically defaults to the "loading" state - results from stores haven't come back yet.
+Collect all promises that resulted from intial render.
+Wait for all promises to resolve (or timeout).
+Re-render the app with the same stores/actions - they are now updated with the results from all the promises.
+Collect all promises that resulted... repeat.
+If no promises remain then output the result.
+
+Considerations - can infinite loop; put sane default clamp to max number of iterations. Are the intermediate results good for anything?
+
+
+
 ```javascript
 
 var example = action((id) => {
@@ -30,13 +43,16 @@ example.values.observe(console.log)
 example.errors.observe(console.error)
 ```
 
+```javascript
+
+```
 
 
-
+[flux]: http://facebook.github.io/flux/
 [most]: https://github.com/cujojs/most
 [kefir]: http://pozadi.github.io/kefir
-[rxjs]: ...
-[bacon]: ...
-[fluxxor]: ...
-[fluxible]: ...
-https://medium.com/@garychambers108/functional-reactive-react-js-b04a8d97a540
+[rxjs]: https://github.com/Reactive-Extensions/RxJS
+[bacon]: https://baconjs.github.io/
+[fluxxor]: http://fluxxor.com/
+[fluxible]: https://github.com/yahoo/fluxible
+[blog post]: https://medium.com/@garychambers108/functional-reactive-react-js-b04a8d97a540
