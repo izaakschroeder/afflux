@@ -1,0 +1,12 @@
+{
+	"name": "afflux",
+	"version": "0.1.0",
+	"author": "Izaak Schroeder <izaak.schroeder@gmail.com>",
+	"dependencies": {
+		"most": "^0.14.0"
+	},
+	"devDependencies": {
+		"eslint": "^0.20.0",
+		"babel-eslint": "^3.0.1"
+	}
+}
