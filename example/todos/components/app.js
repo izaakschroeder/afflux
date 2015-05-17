@@ -1,19 +1,32 @@
+/** @jsx createElement */
 
-import { Component, render } from 'react';
-import { mixin } from 'afflux';
+import { Component, render, createElement, PropTypes } from 'react';
+import { container, observe } from 'afflux';
+import map from 'lodash/collection/map';
 
-@observes([todos.x, users.y], (todos, user) => { todos: todos, user: user })
-export default class App extends Component {
-	constructor() {
-
-	}
-
+@observe(stores => [ stores.todos ], todos => {
+	return { todos: todos };
+})
+class Todos extends Component {
 	render() {
-		<Todos todos={this.props.todos}/>
+		console.log('renderino!');
+		var todos = map(this.props.todos, todo => <div>
+			{todo.id} - {todo.text}<br/>
+		</div>);
+		return <div>
+			{todos}
+		</div>;
 	}
 }
 
-const root = document.querySelector('#content');
+@container
+class App extends Component {
+	render() {
+		return <Todos/>;
+	}
+}
+
+
 
 // State from the server
 var state = {
@@ -21,13 +34,51 @@ var state = {
 };
 
 // Actions
+var TodoActions = require('../actions/todo.action');
+var todosStore = require('../stores/todo.store');
+
 var actions = {
-	todos: todosActions()
-}
+	todos: new TodoActions()
+};
 
 // Stores
 var stores = {
-	todos: todosStore(state.todos, actions.todos)
+	todos: todosStore(actions.todos, state.todos)
+};
+
+// const state = mapValues(stores, (store) => store.dehydrate());
+
+
+/*
+const routes = <Route path='/' handler={App}>
+	<Route path='/about' handler={About}/>
+	<Route path='/user' handler={Users}>
+		<Route path='/:id' handler={User}/>
+	</Route>
+</Route>;
+*/
+
+console.log('actions', actions);
+console.log('stores', stores);
+
+stores.todos.observe(function(todos) {
+	console.log('current todos', todos);
+});
+
+
+actions.todos.create();
+actions.todos.create();
+
+function go() {
+	const root = document.querySelector('#content');
+	const app = <App actions={actions} stores={stores}/>;
+	render(app, root);
 }
 
-render(<App actions={actions} stores={stores}/>, root);
+go();
+
+
+actions.todos.create();
+actions.todos.create();
+actions.todos.create();
+actions.todos.create();

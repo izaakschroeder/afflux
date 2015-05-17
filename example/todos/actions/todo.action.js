@@ -3,32 +3,44 @@ import { action } from 'afflux';
 import Promise from 'bluebird';
 import { Record } from 'immutable';
 
-var Todo = Record({ id: 0, complete: false, text: '' });
-
-function create(props) {
-	props.id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
-	return Todo(props);
+class Todo extends Record({ id: 0, complete: false, text: 'Hello World' }) {
+	get isAdmin() {
+		return this.id > 5;
+	}
 }
 
-export default function createActions() {
-	return {
-		list: action(() => {
-			return Promise.resolve([
-				Todo({}),
-				Todo({})
-			]);
-		}),
-		get: action((id) => {
-			return Promise.resolve(Todo({}));
-		}),
-		create: action((props) => {
+function create(props) {
+	props = props || { };
+	props.id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
+	return new Todo(props);
+}
+
+export default class TodoActions {
+
+	@action
+	list() {
+		return Promise.resolve([
+			Todo({}),
+			Todo({})
+		]);
+	}
+
+	@action
+	create(props) {
+		if (Math.random() > 0) {
 			return Promise.resolve(create(props));
-		}),
-		destroy: action((id) => {
-			return Promise.resolve(id);
-		}),
-		update: action((props) => {
-			return Promise.resolve(Todo(props));
-		})
-	};
+		} else {
+			return Promise.reject({ err: "WTF?" });
+		}
+	}
+
+	@action
+	destroy(id) {
+		return Promise.resolve(id);
+	}
+
+	@action
+	update(props) {
+		return Promise.resolve(Todo(props));
+	}
 }

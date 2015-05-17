@@ -1,0 +1,70 @@
+
+var path = require('path'),
+	mapValues = require('lodash/object/mapValues'),
+	webpack = require('webpack'),
+	ExtractStatsPlugin = require('extract-stats-webpack-plugin');
+
+// Export the webpack configuration
+var config = {
+	entry: {
+		app: './todos/components/app'
+	},
+
+	output: {
+		filename: '[name].js',
+		publicPath: '/assets',
+		path: path.join(__dirname, 'todos', 'build'),
+		chunkFilename: '[id].js'
+	},
+
+	module: {
+		loaders: [{
+			test: /\.js$/,
+			exclude: /node_modules/,
+			include: /afflux/,
+			loaders: [
+				'babel-loader?optional[]=runtime&optional[]=optimisation.react.constantElements&optional[]=es7.classProperties&optional[]=es7.decorators&nonStandard=true'
+			]
+		}, {
+			test: /\.json5?$/i,
+			loader: 'json5-loader'
+		}]
+	},
+
+	resolve: {
+		root: [
+			path.join(__dirname, 'todos', 'components')
+		]
+	},
+
+	plugins: [
+		new webpack.DefinePlugin({
+			'process.env': mapValues(process.env, JSON.stringify)
+		}),
+
+		new webpack.ProgressPlugin(function progress(percentage, message) {
+			var MOVE_LEFT = new Buffer('1b5b3130303044', 'hex').toString();
+			var CLEAR_LINE = new Buffer('1b5b304b', 'hex').toString();
+			process.stdout.write(
+				CLEAR_LINE +
+				Math.round(percentage * 100) +
+				'%:' +
+				message +
+				MOVE_LEFT
+			);
+		}),
+
+		new ExtractStatsPlugin('stats.json', {
+			hash: true,
+			assets: false,
+			reasons: false,
+			chunks: true,
+			source: false
+		})
+
+	],
+
+	devtool: 'source-map'
+};
+
+module.exports = config;

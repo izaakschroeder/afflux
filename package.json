@@ -1,14 +1,20 @@
 {
 	"name": "afflux",
 	"version": "0.1.0",
+	"description": "Functional-reactive flux.",
 	"author": "Izaak Schroeder <izaak.schroeder@gmail.com>",
+	"keywords": [ "functional", "reactive", "flux", "react" ],
 	"repository": "izaakschroeder/afflux",
+	"main": "lib/index.js",
 	"dependencies": {
 		"most": "izaakschroeder/most#baseless",
 		"lodash": "^3.8.0"
 	},
 	"devDependencies": {
-		"eslint": "^0.20.0",
+		"eslint": "^0.21.0",
 		"babel-eslint": "^3.0.1"
+	},
+	"peerDependencies": {
+		"react": "^0.13 || ^0.14.0-alpha1"
 	}
 }
