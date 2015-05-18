@@ -1,15 +1,32 @@
 # afflux
+Izaak Schroeder <izaak.schroeder@gmail.com>
+:name: afflux
 
 Functional-reactive flux patterns for React.
 
+image:http://img.shields.io/travis/izaakschroeder/{name}/master.svg?style=flat[foo]
+image:http://img.shields.io/coveralls/izaakschroeder/{name}/master.svg?style=flat[foo]
+image:http://img.shields.io/npm/l/{name}.svg?style=flat[foo]
+image:http://img.shields.io/npm/v/{name}.svg?style=flat[bar]
+image:http://img.shields.io/npm/dm/{name}.svg?style=flat[baz]
+
+[abstract]
 afflux uses [most] to implement a very minimal, fast, functional-reactive style of [flux] patterns for web applications.
 
-[Actions]:
+
+
+## Overview
+
+<<flux>>
+
+*Actions*:
+
  * Are asynchronous - Actions always flow on the next tick.
  * Are streams of promises - You can observe the flow of all actions.
  * Are promises - You can observe for the result of a single action.
 
-[Stores]:
+*Stores*:
+
  * Are synchronous - React only to results of actions.
  * Create properties - Reduce actions to get consumed by views.
  * Domain specific - Encapsulate functionality specific to one domain.
@@ -22,7 +39,9 @@ TODO.
 
 ## Usage
 
-```json
+Add {name} to your project.
+
+```sh
 npm install --save afflux react
 ```
 
@@ -35,11 +54,12 @@ import Promise from 'bluebird';
 import { action } from 'afflux';
 
 class MyActions {
+
     constructor(api) {
         this.api = api;
     }
 
-    @action
+    @action // <1>
     foo() {
         return this.api.get('/foo');
     }
@@ -50,6 +70,8 @@ class MyActions {
     }
 }
 ```
+
+<1> Use action as an ES7 decorator.
 
 You can create free-standing functions if you wish as well.
 
@@ -80,18 +102,25 @@ class MyStore {
 ### Views
 
 ```javascript
-import { component, observe } from 'afflux';
+import { container, observe } from 'afflux';
 
-@component
+@container <1>
 class App extends Component {
-
+    render() {
+        return <View/>;
+    }
 }
 
-@observe
+@observe <2>
 class View extends Component {
-
+    render() {
+        return <div></div>
+    }
 }
 ```
+
+<1> The container HOC
+<2> The observe HOC
 
 ### Server-Side Rendering
 
@@ -116,56 +145,67 @@ app.use((req, res) => {
 
 ## Testing
 
-Easy to test using any test framework that supports promises such as [mocha].
+Easy to test using any test framework that supports promises. Such a possible combination is [mocha], [chai] and [chai-as-promised].
 
-Actions:
+### Actions
 
 ```javascript
-import todos from 'actions/todos.action';
+import TodoActions from 'actions/todos.action';
 describe('#create', () => {
-    // Stub out any backend services you call out to.
-    let actions = todos();
+
+    let actions;
+
+    beforeEach(() => {
+        actions = new TodoActions();
+    });
+
     it('should create a new todo', () => {
-        // Since actions return promises, we can just test the value of
-        // the promise directly.
-        return expect(actions.create).to.eventually.equal({ foo: 'bar' });
+        return <1> expect(actions.create).to.eventually.equal({
+            foo: 'bar'
+        });
     });
 });
 ```
 
-Stores:
+<1> Since actions return promises, we can just test the value of the promise directly.
+
+### Stores
 
 ```javascript
 import emitter from 'most/sources/emitter';
 import never from 'most/sources/never';
-import todos from 'stores/todos.store';
+import TodoStore from 'stores/todos.store';
 
 describe('todos', () => {
     // Instead of using normal actions, use emitters for everything you
     // want to control and nevers for anything else. This ensures that
     // the merged values stream eventually ends; it will end after all
     // actions have ended.
-    let create = emitter();
-    let values = todos({ create: create, update: never });
+    let store, actions;
+
+    beforeEach(() => {
+        actions = { create: emitter(), update: never };
+        store = new TodoStore(actions);
+    });
+
     it('should add created todo', () => {
         create.emit({ id: 5 }).end();
         // Since stores are also promises, we can just test the value of
         // the promise directly.
-        return expect(values).to.eventually.contain({ id: 5 });
+        return expect(store.todos).to.eventually.contain({ id: 5 });
     });
 })
 ```
 
 
-
-
-[flux]: http://facebook.github.io/flux/
-[most]: https://github.com/cujojs/most
-[kefir]: http://pozadi.github.io/kefir
-[rxjs]: https://github.com/Reactive-Extensions/RxJS
-[bacon]: https://baconjs.github.io/
-[fluxxor]: http://fluxxor.com/
-[fluxible]: https://github.com/yahoo/fluxible
-[biff]: https://github.com/FormidableLabs/biff
-[alt]: http://alt.js.org/
-[blog post]: https://medium.com/@garychambers108/functional-reactive-react-js-b04a8d97a540
+[bibliography]
+ * [[[flux]]] Flux http://facebook.github.io/flux/
+ * [most]: https://github.com/cujojs/most
+ * [kefir]: http://pozadi.github.io/kefir
+ * [rxjs]: https://github.com/Reactive-Extensions/RxJS
+ * [bacon]: https://baconjs.github.io/
+ * [fluxxor]: http://fluxxor.com/
+ * [fluxible]: https://github.com/yahoo/fluxible
+ * [biff]: https://github.com/FormidableLabs/biff
+ * [alt]: http://alt.js.org/
+ * [blog post]: https://medium.com/@garychambers108/functional-reactive-react-js-b04a8d97a540
