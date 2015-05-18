@@ -1,8 +1,14 @@
 # afflux
 Izaak Schroeder <izaak.schroeder@gmail.com>
 :name: afflux
+:description: Functional-reactive flux patterns for React.
+:icons: font
+:idprefix:
+:idseparator: -
+:toc:
+:toc-placement: preamble
 
-Functional-reactive flux patterns for React.
+{description}
 
 image:http://img.shields.io/travis/izaakschroeder/{name}/master.svg?style=flat[foo]
 image:http://img.shields.io/coveralls/izaakschroeder/{name}/master.svg?style=flat[foo]
@@ -14,24 +20,30 @@ image:http://img.shields.io/npm/dm/{name}.svg?style=flat[baz]
 afflux uses [most] to implement a very minimal, fast, functional-reactive style of [flux] patterns for web applications.
 
 
-
 ## Overview
 
-<<flux>>
+{name} follows the <<flux>> mantra by providing patterns for actions and stores.
 
 *Actions*:
 
+ * Are dispatchers - Call whenever you need to _do_ something.
  * Are asynchronous - Actions always flow on the next tick.
  * Are streams of promises - You can observe the flow of all actions.
  * Are promises - You can observe for the result of a single action.
 
+Example: "Create a todo with content 'x'".
+
 *Stores*:
 
+ * Are oracles - Call whenever you need to _know_ something.
  * Are synchronous - React only to results of actions.
- * Create properties - Reduce actions to get consumed by views.
+ * Create properties - Reduce actions to values consumed by views.
  * Domain specific - Encapsulate functionality specific to one domain.
 
-What about the dispatcher? There is none. Everything is a stream. You can emulate all the functionality of a dispatcher with stream combinators.
+Example: "What are all the known todos?".
+
+
+TIP: What about the dispatcher? There is none. Everything is a stream. You can emulate all the functionality of a dispatcher with stream combinators.
 
 ## Framework Comparison
 
