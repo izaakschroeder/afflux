@@ -2,12 +2,17 @@
 
 import { Component, render, createElement, PropTypes } from 'react';
 import { container, observe } from 'afflux';
+import { send, receive } from 'react-beam';
+
 import map from 'lodash/collection/map';
 
 @observe(stores => [ stores.todos ], todos => {
 	return { todos: todos };
 })
+@receive('stores', 'actions')
 class Todos extends Component {
+
+
 	render() {
 		console.log('renderino!');
 		var todos = map(this.props.todos, todo => <div>
@@ -19,7 +24,7 @@ class Todos extends Component {
 	}
 }
 
-@container
+@send('stores', 'actions')
 class App extends Component {
 	render() {
 		return <Todos/>;

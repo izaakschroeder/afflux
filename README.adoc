@@ -1,8 +1,9 @@
-# afflux
+# {name}
 Izaak Schroeder <izaak.schroeder@gmail.com>
 :name: afflux
-:description: Functional-reactive flux patterns for React.
+:description: Unopinionated, functionally-reactive flux patterns for React.
 :icons: font
+:source-highlighter: highlight.js
 :idprefix:
 :idseparator: -
 :toc:
@@ -17,21 +18,21 @@ image:http://img.shields.io/npm/v/{name}.svg?style=flat[bar]
 image:http://img.shields.io/npm/dm/{name}.svg?style=flat[baz]
 
 [abstract]
-afflux uses [most] to implement a very minimal, fast, functional-reactive style of [flux] patterns for web applications.
+{name} uses [most] to implement a very minimal, fast, functional-reactive style of [flux] patterns for web applications.
 
 
 ## Overview
 
-{name} follows the <<flux>> mantra by providing patterns for actions and stores.
+{name} follows the <<flux>> mantra by providing patterns for actions and stores. It works best with purely functional-style data representation like immutable.js.
 
 *Actions*:
 
  * Are dispatchers - Call whenever you need to _do_ something.
  * Are asynchronous - Actions always flow on the next tick.
  * Are streams of promises - You can observe the flow of all actions.
- * Are promises - You can observe for the result of a single action.
+ * Create promises - You can observe the result of a single action.
 
-Example: "Create a todo with content 'x'".
+Example: "Create a todo with content 'x'" `actions.todos.create("x")`.
 
 *Stores*:
 
@@ -40,14 +41,18 @@ Example: "Create a todo with content 'x'".
  * Create properties - Reduce actions to values consumed by views.
  * Domain specific - Encapsulate functionality specific to one domain.
 
-Example: "What are all the known todos?".
+Example: "What are all the known todos?". `stores.todos`
 
 
-TIP: What about the dispatcher? There is none. Everything is a stream. You can emulate all the functionality of a dispatcher with stream combinators.
+TIP: What about the dispatcher? There is none. Everything is a stream. You can emulate all the functionality (including `waitFor`) of a dispatcher with stream combinators.
 
 ## Framework Comparison
 
-TODO.
+### Alt
+
+### Fluxible
+
+### Fluxxor
 
 ## Usage
 
@@ -57,6 +62,8 @@ Add {name} to your project.
 npm install --save afflux react
 ```
 
+TIP: You can use the generator-{name} package with yeoman to help make action and store files automatically; there's also {name}-router for handling routing.
+
 ### Actions
 
 Actions are just functions that create promises. Typically you group your actions together logically in a class that encapsulates the relevant functionality. Actions contain no data about the _state_ of the system.
@@ -65,7 +72,7 @@ Actions are just functions that create promises. Typically you group your action
 import Promise from 'bluebird';
 import { action } from 'afflux';
 
-class MyActions {
+export default class MyActions {
 
     constructor(api) {
         this.api = api;
@@ -103,20 +110,25 @@ Typically you want:
  * to produce a result that is the combination of multiple actions,
  * to use the result of the promise from the action.
 
+You can use most combinators to achieve this.
+
 ```javascript
-class MyStore {
+export default class MyStore {
     constructor(actions) {
-        this.foo = actions.bar.await();
+        this.myobjects = actions.bar.await();
     }
 }
 ```
 
 ### Views
 
-```javascript
-import { container, observe } from 'afflux';
+Higher-order components make using {name} in React views straightforward.
 
-@container <1>
+```javascript
+import { send, receive } from 'react-beam';
+import { observe } from 'react-observe';
+
+@send('stores', 'actions') <1>
 class App extends Component {
     render() {
         return <View/>;
@@ -124,6 +136,7 @@ class App extends Component {
 }
 
 @observe <2>
+@receive('stores', 'actions') <3>
 class View extends Component {
     render() {
         return <div></div>
@@ -131,10 +144,13 @@ class View extends Component {
 }
 ```
 
-<1> The container HOC
+<1> Use `react-beam` `send` to pass down `stores` and `actions` to child components.
 <2> The observe HOC
+<3> Use `react-beam` `receive` to get values for `stores` and `actions` from the main app without explicitly needing to set them in `props` every time.
 
-### Server-Side Rendering
+TIP: You can still pass `stores` and `actions` as part of `props` when you need to -- local values override those from parents.
+
+### Isomorphism
 
 Server-side rendering is possible by waiting until all actions have settled and then outputting the result. Clients can then use this result by having the stores dehydrate their state on the server and rehydrate them on the client.
 
@@ -155,6 +171,106 @@ app.use((req, res) => {
 });
 ```
 
+```javascript
+import { render } from 'react';
+```
+
+## Patterns
+
+### Dispatcher
+
+*Observing all events*:
+
+To observe all actions, simply `merge` them all together.
+
+```javascript
+import { merge, observe } from 'most';
+
+const all = merge(actions.a, actions.b, ...);
+
+observe(all, (evt) => {
+    console.log('Got event', evt);
+});
+```
+
+*Waiting for other stores*:
+
+Generally when you wait for another store it's because you want to use its result as part of the new value in your store (combined with whatever actions your store observes). This can be achieved with a `flatMap` combinator.
+
+```javascript
+import { map, flatMap, take } from 'most';
+import { partial } from 'lodash';
+
+function compute(action, todo) {
+    // Do something with both action and todo
+    return { ... };
+}
+
+const stream = flatMap(
+    (result) => map(partial(compute, result), take(1, todos)),
+    action
+);
+```
+
+Roughly this works as follows:
+
+ * `action` emits an event
+ * Remember that event and combine it with the next event in `todos`
+ * Call `compute` with both of those values and emit the result
+
+
+You can also explicitly wait for a stream by turning it into a promise with `drain`.
+
+```javascript
+import { drain, take } from 'most';
+
+const result = drain(take(1, store.todos));
+result.then(() => {
+    console.log('Finished waiting for todos');
+});
+```
+
+
+### Models
+
+{name} has no model class.
+
+```javascript
+import { Record } from 'immutable';
+
+class MyModel extends Record({ a: 1, b: 2 }) {
+
+}
+
+const test = new MyModel();
+const derp = new MyModel({ a: 5, b: 7 });
+```
+
+### Collections
+
+{name} has no collection class.
+
+```javascript
+xxx
+```
+
+
+### Sources
+
+Sometimes information about a single entity is the result of more than one action - maybe you have chat messages that can come from an HTTP API call and from a socket.io event stream. You can use stream combinators to combine these sources for your store.
+
+```javascript
+import { merge, fromEvent } from 'most';
+
+class ChatMessageStore {
+    constructor(actions, io) {
+        const stream = merge(actions.a, fromEvent('message', io));
+    }
+}
+```
+
+NOTE: Information from non-action stream sources *cannot* be accurately detected when using server-side rendering. This pattern should be used on the client only.
+
 ## Testing
 
 Easy to test using any test framework that supports promises. Such a possible combination is [mocha], [chai] and [chai-as-promised].
@@ -172,7 +288,7 @@ describe('#create', () => {
     });
 
     it('should create a new todo', () => {
-        return <1> expect(actions.create).to.eventually.equal({
+        return expect(actions.create).to.eventually.equal({ <1>
             foo: 'bar'
         });
     });
@@ -207,6 +323,52 @@ describe('todos', () => {
         return expect(store.todos).to.eventually.contain({ id: 5 });
     });
 })
+```
+
+### Views
+
+Testing views is slightly more involved since React and the DOM are now involved. Stubbing out actions and stores are both straightforward, however, and follow from the previous two types of testing.
+
+```javascript
+import View from './view';
+import { jsdom } from 'jsdom';
+import { renderComponent } from 'react';
+
+describe('View', () => {
+
+    const html = '<!doctype html><html><body><div id="test"/></body></html>';
+    let view, actions, stores, document, target;
+
+    function render(view) {
+        return renderComponent(view, target);
+    }
+
+    beforeEach(() => {
+        document = jsdom(html);
+        target = document.getElementById('test');
+        actions = {
+            test: stub().returns(Promise.resolve('yes'))
+        }
+        stores = {
+            todos: emitter()
+        }
+    });
+
+    describe('#render', () => {
+        it('should add todo when add button clicked', () => {
+            const view = <View actions={..} stores={..}/>;
+            let node = render(view);
+            node.button.click();
+            expect(actions.test).to.be.calledOnce;
+        });
+        it('should display list of todos from store', () => {
+            const view = <View actions={..} stores={..}/>;
+            stores.todos.emit({ id: 5, text: "hello" });
+            let node = render(view);
+            expect(node.props.children).to.have.length(1);
+        });
+    });
+});
 ```
 
 
