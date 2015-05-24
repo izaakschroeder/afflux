@@ -235,25 +235,51 @@ result.then(() => {
 
 ### Models
 
-{name} has no model class.
+{name} has no model class, however it's easy to pattern models analogous to those of backbone using [immutable]. Note that models have no methods since they cannot sensibly modify themselves - they are never attached to a store, so `save`, `load`, etc. are meaningless.
 
 ```javascript
 import { Record } from 'immutable';
 
 class MyModel extends Record({ a: 1, b: 2 }) {
-
+    get isAdmin() {
+        return this.a > 3;
+    }
 }
 
 const test = new MyModel();
 const derp = new MyModel({ a: 5, b: 7 });
+
+console.log(derp.isAdmin);
 ```
 
 ### Collections
 
-{name} has no collection class.
+{name} has no collection class, however it's easy to pattern collections analogous to those of backbone using [immutable] and some stream combinators. Collections are stores that accumulate changes to a set of objects over time.
 
 ```javascript
-xxx
+import { Map, fromJS } from 'immutable';
+import { merge, map, flatMapError } from 'most';
+import accumulate from 'afflux/lib/combinators/accumulate';
+import update from 'afflux/lib/combinators/update';
+
+export default function createCollection(actions, initialValue) {
+
+	const updates = merge(
+		update((todos, todo) => todos.set(todo.id, todo), actions.create),
+        update((todos, todo) => todos.delete(todo.id), actions.delete),
+		update((_, todos) => todos, actions.rehydrate)
+	);
+
+	const s = flatMapError(() => updates, updates);
+
+	const initialValue = base ? fromJS(base) : Map();
+
+	const stream = map(entry => entry.toJS(), accumulate(initialValue, s));
+
+
+	return { ...actions, source: stream.source, id: 'todo' };
+}
+
 ```
 
 
@@ -272,6 +298,28 @@ class ChatMessageStore {
 ```
 
 NOTE: Information from non-action stream sources *cannot* be accurately detected when using server-side rendering. This pattern should be used on the client only.
+
+### Optimistic Updates
+
+Since actions are just streams of promises, you can simply perform updates before the promise finishes - if the promise is rejected then you revert back to the old value, and if it resolves you simply ensure the current value is the actual value.
+
+```javascript
+var beep = action(function(message) {
+    if (Math.random() > 0.5) {
+        Promise.resolve('beep');
+    } else {
+        Promise.reject('bop');
+    }
+});
+
+const optimistic = map((message), beep);
+const actual = 
+
+const stream = merge(optimistic, actual);
+```
+
+
+You can extend this to the collection pattern to perform optimistic updates for entire collections as well.
 
 ## Testing
 
@@ -302,24 +350,13 @@ describe('#create', () => {
 ### Stores
 
 ```javascript
-import emitter from 'most/sources/emitter';
-import never from 'most/sources/never';
+import { never, of as just } from 'most';
 import TodoStore from 'stores/todos.store';
 
 describe('todos', () => {
-    // Instead of using normal actions, use emitters for everything you
-    // want to control and nevers for anything else. This ensures that
-    // the merged values stream eventually ends; it will end after all
-    // actions have ended.
-    let store, actions;
-
-    beforeEach(() => {
-        actions = { create: emitter(), update: never };
-        store = new TodoStore(actions);
-    });
-
     it('should add created todo', () => {
-        create.emit({ id: 5 }).end();
+        const actions = { create: just({ id: 5 }), update: never };
+        const store = new TodoStore(actions);
         // Since stores are also promises, we can just test the value of
         // the promise directly.
         return expect(store.todos).to.eventually.contain({ id: 5 });

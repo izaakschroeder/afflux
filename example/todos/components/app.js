@@ -21,7 +21,7 @@ class Todos extends Component {
 
 	render() {
 		const items = this.props.todos || this.props.stores.todos.value;
-		var todos = map(items, todo => <div key={todo.id}>
+		const todos = map(items, todo => <div key={todo.id}>
 			{todo.id} - {todo.text}<br/>
 		</div>);
 		return <div>
@@ -30,14 +30,12 @@ class Todos extends Component {
 	}
 }
 
-var x = 0;
-
 @send('stores', 'actions')
 class App extends Component {
 	render() {
-		if (x++ < 2) {
-			actions.todos.create();
-		}
+		// Do something dumb to test the render pipeline
+		actions.todos.create();
+
 		return <div>
 			<Todos/>
 			<a onClick={this.props.actions.todos.create}>Create Todo</a>
@@ -104,8 +102,8 @@ observe(function(todos) {
 }, stores.todos);
 
 
-actions.todos.create();
-actions.todos.create();
+//actions.todos.create();
+//actions.todos.create();
 
 import escape from 'script-escape';
 
