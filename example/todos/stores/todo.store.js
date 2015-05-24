@@ -1,48 +1,28 @@
 import { Map, fromJS } from 'immutable';
-import { merge, map, await, flatMapError, scan } from 'most';
+import { merge, map, flatMapError } from 'most';
+import { map as xmap } from 'lodash';
 
-/**
- * Create a new collection. Collections are streams that accumulate changes to
- * groups of objects over time. They take an initial value and, as events come
- * in, repeatedly update that value to reflect the current group of objects.
- * @param  {Object} base The initial value for the collection.
- * @param  {Array} actions Streams of functions that mutate the collection.
- * @return {Stream} Stream representing the resulting collection.
- */
-function collection(base, ...actions) {
-	// Merge all the actions into one stream.
-	const all = merge(...actions);
-	// If there's an error, don't bother with it.
-	// Apply updates from the action stream to the value.
-	return scan((prev, fn) => fn(prev), base, flatMapError(() => all, all));
-}
+import accumulate from 'afflux/lib/combinators/accumulate';
+import update from 'afflux/lib/combinators/update';
 
-/**
- * Create an update stream; it generates functions that update the current
- * collection value given the current value of the input stream and the given
- * function.
- * @param  {Stream} stream Stream containing input events.
- * @param  {Function} f Function to apply to every input and the collection.
- * @return {Stream} Resultant stream.
- */
-function update(stream, f) {
-	return map((item) => (base) => f(base, item), await(stream));
-}
 
-function derp(actions, updates) {
-	const streams = map(updates, (value, key) => update(actions[key], value));
+function respond(actions, updates) {
+	const streams = xmap(updates, (value, key) => update(actions[key], value));
+	return merge(...streams);
 }
 
 export default function createStore(actions, base) {
-	const initialValue = base ? fromJS(base) : Map();
-	const stream = map(entry => entry.toJS(), collection(initialValue,
-		update(actions.create, (todos, todo) => todos.set(todo.id, todo)),
-		update(actions.hydrate, (_, todos) => todos)
-    ));
 
-	stream.observe((value) => {
-		console.log('updating store value');
-		stream.value = value;
+	const all = respond(actions, {
+		create: (todos, todo) => todos.set(todo.id, todo),
+		hydrate: (_, todos) => todos
 	});
-	return stream;
+
+	const initialValue = base ? fromJS(base) : Map();
+	const s = flatMapError(() => all, all);
+	const stream = map(entry => entry.toJS(), accumulate(initialValue, s));
+	// This lets you do things like invoke todos.create(); note that stream
+	// functionality must be invoked foo(stream) and not stream.foo(); since
+	// all the actions are being used now.
+	return { ...actions, source: stream.source };
 }

@@ -1,9 +1,10 @@
 /** @jsx createElement */
 
 import { Component, render, createElement, PropTypes } from 'react';
-import { container, observe, render as renderToString } from 'afflux';
+import { render as renderToString } from 'afflux';
 import { send, receive } from 'react-beam';
 import observer from 'react-observer';
+import { observe } from 'most';
 
 import map from 'lodash/collection/map';
 
@@ -37,10 +38,28 @@ class App extends Component {
 		if (x++ < 2) {
 			actions.todos.create();
 		}
-		return <Todos/>;
+		return <div>
+			<Todos/>
+			<a onClick={this.props.actions.todos.create}>Create Todo</a>
+		</div>;
 	}
 }
 
+/*
+
+On the client typically there is an eternal watcher - observe store values and
+save them for when new components are instantiated; also allows one to get the
+state of the system at any time.
+
+On the server the watcher lives only for the request.
+
+"state" stream -> merge(stores)
+
+on server, combine this with render stream
+
+sample((state, html) => { return { state: state, html: html }; }, render, state, render);
+
+ */
 
 
 // State from the server
@@ -80,15 +99,17 @@ actions.todos.create.observe(function(x) {
 	console.log('someone make a todo lel');
 })
 
-stores.todos.observe(function(todos) {
+observe(function(todos) {
 	console.log('current todos', todos);
-});
+}, stores.todos);
 
 
 actions.todos.create();
 actions.todos.create();
 
+import escape from 'script-escape';
 
+console.log(escape(JSON.stringify({ foo: '</script>' }))) ;
 
 function go() {
 	const root = document.querySelector('#content');
