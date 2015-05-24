@@ -5,7 +5,9 @@
 		"react": "^0.14.0-alpha1",
 		"immutable": "^3.7.2",
 		"afflux": "^0.1.0",
-		"react-beam": "^0.1.0"
+		"react-beam": "^0.1.0",
+		"react-observer": "^0.1.0",
+		"most": "^0.14.0"
 	},
 	"devDependencies": {
 		"webpack": "^1.9.5",

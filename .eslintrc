@@ -28,6 +28,7 @@
 		"no-use-before-define": 2,
 		"no-undefined": 2,
 		"no-underscore-dangle": 0,
+		"no-var": 2,
 		"indent": [2, "tab"],
 		"quotes": [2, "single"],
 		"radix": 2,

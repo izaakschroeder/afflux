@@ -1,21 +1,26 @@
 /** @jsx createElement */
 
 import { Component, render, createElement, PropTypes } from 'react';
-import { container, observe } from 'afflux';
+import { container, observe, render as renderToString } from 'afflux';
 import { send, receive } from 'react-beam';
+import observer from 'react-observer';
 
 import map from 'lodash/collection/map';
 
-@observe(stores => [ stores.todos ], todos => {
-	return { todos: todos };
-})
+
 @receive('stores', 'actions')
+@observer
 class Todos extends Component {
 
+	observe(props) {
+		return {
+			todos: props.stores.todos
+		};
+	}
 
 	render() {
-		console.log('renderino!');
-		var todos = map(this.props.todos, todo => <div>
+		const items = this.props.todos || this.props.stores.todos.value;
+		var todos = map(items, todo => <div key={todo.id}>
 			{todo.id} - {todo.text}<br/>
 		</div>);
 		return <div>
@@ -24,9 +29,14 @@ class Todos extends Component {
 	}
 }
 
+var x = 0;
+
 @send('stores', 'actions')
 class App extends Component {
 	render() {
+		if (x++ < 2) {
+			actions.todos.create();
+		}
 		return <Todos/>;
 	}
 }
@@ -35,7 +45,7 @@ class App extends Component {
 
 // State from the server
 var state = {
-	todos: { 4: { text: 'Sample todo' } }
+	todos: { 4: { id: 4, text: 'Sample todo' } }
 };
 
 // Actions
@@ -66,6 +76,10 @@ const routes = <Route path='/' handler={App}>
 console.log('actions', actions);
 console.log('stores', stores);
 
+actions.todos.create.observe(function(x) {
+	console.log('someone make a todo lel');
+})
+
 stores.todos.observe(function(todos) {
 	console.log('current todos', todos);
 });
@@ -74,16 +88,24 @@ stores.todos.observe(function(todos) {
 actions.todos.create();
 actions.todos.create();
 
+
+
 function go() {
 	const root = document.querySelector('#content');
 	const app = <App actions={actions} stores={stores}/>;
-	render(app, root);
+
+	renderToString(app).then(function(result) {
+		console.log('rendered!', result);
+	});
+	//render(app, root);
 }
 
 go();
 
-
+/*actions.todos.create();
 actions.todos.create();
 actions.todos.create();
-actions.todos.create();
-actions.todos.create();
+setTimeout(function() {
+	actions.todos.create();
+}, 19)
+*/

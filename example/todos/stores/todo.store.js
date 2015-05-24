@@ -1,5 +1,5 @@
 import { Map, fromJS } from 'immutable';
-import { merge, map, await } from 'most';
+import { merge, map, await, flatMapError, scan } from 'most';
 
 /**
  * Create a new collection. Collections are streams that accumulate changes to
@@ -9,14 +9,12 @@ import { merge, map, await } from 'most';
  * @param  {Array} actions Streams of functions that mutate the collection.
  * @return {Stream} Stream representing the resulting collection.
  */
-function collection(base, actions) {
+function collection(base, ...actions) {
 	// Merge all the actions into one stream.
-	const all = merge(actions);
-	return all
-		// If there's an error, don't bother with it.
-		.flatMapError(() => all)
-		// Apply updates from the action stream to the value.
-		.scan((prev, fn) => fn(prev), base);
+	const all = merge(...actions);
+	// If there's an error, don't bother with it.
+	// Apply updates from the action stream to the value.
+	return scan((prev, fn) => fn(prev), base, flatMapError(() => all, all));
 }
 
 /**
@@ -37,7 +35,14 @@ function derp(actions, updates) {
 
 export default function createStore(actions, base) {
 	const initialValue = base ? fromJS(base) : Map();
-	return map(entry => entry.toJS(), collection(initialValue, [
-		update(actions.create, (todos, todo) => todos.set(todo.id, todo))
-    ]));
+	const stream = map(entry => entry.toJS(), collection(initialValue,
+		update(actions.create, (todos, todo) => todos.set(todo.id, todo)),
+		update(actions.hydrate, (_, todos) => todos)
+    ));
+
+	stream.observe((value) => {
+		console.log('updating store value');
+		stream.value = value;
+	});
+	return stream;
 }

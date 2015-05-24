@@ -17,6 +17,15 @@ function create(props) {
 
 export default class TodoActions {
 
+	constructor(store) {
+		this.store = store;
+	}
+
+	@action
+	hydrate(todos) {
+		return Promise.resolve(todos);
+	}
+
 	@action
 	list() {
 		return Promise.resolve([
@@ -36,7 +45,7 @@ export default class TodoActions {
 
 	@action
 	destroy(id) {
-		return Promise.resolve(id);
+		return Promise.resolve();
 	}
 
 	@action

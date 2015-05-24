@@ -21,6 +21,8 @@ image:http://img.shields.io/npm/dm/{name}.svg?style=flat[baz]
 {name} uses [most] to implement a very minimal, fast, functional-reactive style of [flux] patterns for web applications.
 
 
+HERPDERP - most's scan retains the previous value; properties can be a scan(identity, stream) basically
+
 ## Overview
 
 {name} follows the <<flux>> mantra by providing patterns for actions and stores. It works best with purely functional-style data representation like immutable.js.
@@ -374,6 +376,8 @@ describe('View', () => {
 
 [bibliography]
  * [[[flux]]] Flux http://facebook.github.io/flux/
+ * [flexy]: https://github.com/nmn/flexy
+ * [react-obs]: https://github.com/facebook/react/issues/3398
  * [most]: https://github.com/cujojs/most
  * [kefir]: http://pozadi.github.io/kefir
  * [rxjs]: https://github.com/Reactive-Extensions/RxJS

@@ -21,9 +21,9 @@ var config = {
 		loaders: [{
 			test: /\.js$/,
 			exclude: /node_modules/,
-			include: /afflux/,
+			include: /afflux|react-beam|react-observer/,
 			loaders: [
-				'babel-loader?optional[]=runtime&optional[]=optimisation.react.constantElements&optional[]=es7.classProperties&optional[]=es7.decorators&nonStandard=true'
+				'babel-loader?optional[]=runtime&optional[]=optimisation.react.constantElements&optional[]=es7.classProperties&optional[]=es7.decorators&optional[]=es7.exportExtensions&optional[]=es7.objectRestSpread&nonStandard=true'
 			]
 		}, {
 			test: /\.json5?$/i,
@@ -33,7 +33,8 @@ var config = {
 
 	resolve: {
 		root: [
-			path.join(__dirname, 'todos', 'components')
+			path.join(__dirname, 'todos', 'components'),
+			path.join(__dirname, 'node_modules'),
 		]
 	},
 
