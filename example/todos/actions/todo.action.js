@@ -39,7 +39,7 @@ export default class TodoActions {
 		if (Math.random() > 0) {
 			return Promise.resolve(create(props));
 		} else {
-			return Promise.reject({ err: "WTF?" });
+			return Promise.reject({ err: 'wtf' });
 		}
 	}
 

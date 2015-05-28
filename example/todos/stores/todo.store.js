@@ -1,6 +1,6 @@
+
 import { Map, fromJS } from 'immutable';
 import { merge, map, flatMapError } from 'most';
-import { map as xmap } from 'lodash';
 
 import accumulate from 'afflux/lib/combinators/accumulate';
 import update from 'afflux/lib/combinators/update';

@@ -24,11 +24,29 @@ describe('#action', () => {
 		expect(spy).to.be.calledWith('foo', 'bar');
 	});
 
-	it('it emits results to the stream', () => {
+	it('should become active when someone is listening', (done) => {
 		const result = action(() => 'foo');
-		let spy = sinon.spy();
+		const spy = sinon.spy();
 		observe(spy, result);
-		result();
-		expect(spy).to.be.calledOnce.and.calledWith('foo');
+		setImmediate(() => {
+			expect(result).to.have.property('active', true);
+			done();
+		});
+	});
+
+	it('should be inactive by default', () => {
+		const result = action(() => 'foo');
+		expect(result).to.have.property('active', false);
+	});
+
+	it('it emits results to the stream', (done) => {
+		const result = action(() => 'foo');
+		const spy = sinon.spy();
+		observe(spy, result);
+		setImmediate(() => {
+			result();
+			expect(spy).to.be.calledOnce.and.calledWith('foo');
+			done();
+		});
 	});
 });

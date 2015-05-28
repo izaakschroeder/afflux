@@ -21,18 +21,23 @@ image:http://img.shields.io/npm/dm/{name}.svg?style=flat[baz]
 {name} uses [most] to implement a very minimal, fast, functional-reactive style of [flux] patterns for web applications.
 
 
-HERPDERP - most's scan retains the previous value; properties can be a scan(identity, stream) basically
+TODO:
+
+ * [ ] Tests
+ * [ ] Allow generators for actions (this allows for optimistic evaluation)
+ * [ ] Pattern for optimistic evaluation
+ * [ ] Comparisons
 
 ## Overview
 
-{name} follows the <<flux>> mantra by providing patterns for actions and stores. It works best with purely functional-style data representation like immutable.js.
+{name} follows the <<flux>> mantra fairly closely by providing patterns for actions and stores. It works best with purely functional-style data representation like immutable.js.
 
 *Actions*:
 
  * Are dispatchers - Call whenever you need to _do_ something.
  * Are asynchronous - Actions always flow on the next tick.
- * Are streams of promises - You can observe the flow of all actions.
- * Create promises - You can observe the result of a single action.
+ * Are streams - You can observe the flow of all actions.
+ * Return values - You can observe the result of a single action.
 
 Example: "Create a todo with content 'x'" `actions.todos.create("x")`.
 
@@ -55,6 +60,9 @@ TIP: What about the dispatcher? There is none. Everything is a stream. You can e
 ### Fluxible
 
 ### Fluxxor
+
+### Flexy
+https://github.com/nmn/flexy
 
 ## Usage
 
@@ -106,18 +114,21 @@ var example = action((id) => {
 
 ### Stores
 
-Stores react precisely to the results of actions. Stores _do_ contain the state of the system.
+Stores react precisely to the results of actions. Stores do _not_ contain the state of the system - they _represent_ the state of the system.
 
-Typically you want:
- * to produce a result that is the combination of multiple actions,
- * to use the result of the promise from the action.
+Typically a store will:
 
-You can use most combinators to achieve this.
+ * produce a result that is the combination of multiple actions,
+ * use the result of the promise from the action.
+
+You can use [most] combinators to achieve this.
 
 ```javascript
+import { await } from 'afflux';
+
 export default class MyStore {
     constructor(actions) {
-        this.myobjects = actions.bar.await();
+        this.myobject = await(actions.bar);
     }
 }
 ```
@@ -128,7 +139,7 @@ Higher-order components make using {name} in React views straightforward.
 
 ```javascript
 import { send, receive } from 'react-beam';
-import { observe } from 'react-observe';
+import { observer } from 'react-observer';
 
 @send('stores', 'actions') <1>
 class App extends Component {
@@ -137,18 +148,24 @@ class App extends Component {
     }
 }
 
-@observe <2>
-@receive('stores', 'actions') <3>
+@receive('stores', 'actions') <1>
+@observer <3>
 class View extends Component {
+
+    observe(props) {
+        return {
+            myobject: props.stores.mystore.myobject
+        };
+    }
+
     render() {
-        return <div></div>
+        return <div>{this.props.myobject.value}</div>
     }
 }
 ```
 
-<1> Use `react-beam` `send` to pass down `stores` and `actions` to child components.
-<2> The observe HOC
-<3> Use `react-beam` `receive` to get values for `stores` and `actions` from the main app without explicitly needing to set them in `props` every time.
+<1> Use `react-beam` to `send` and `recieve` the needed properties like `stores` and `actions`.
+<2> Use `react-observer` to watch for changes in stores and automatically re-render your component when they occur.
 
 TIP: You can still pass `stores` and `actions` as part of `props` when you need to -- local values override those from parents.
 
@@ -156,7 +173,7 @@ TIP: You can still pass `stores` and `actions` as part of `props` when you need 
 
 Server-side rendering is possible by waiting until all actions have settled and then outputting the result. Clients can then use this result by having the stores dehydrate their state on the server and rehydrate them on the client.
 
-Every request creates new instances of actions and stores so messages and state from one request don't interfere with those of another.
+Every request creates new instances of actions and stores so messages and state from one request doesn't' interfere with that of another.
 
 ```javascript
 import { render } from 'afflux';
@@ -164,17 +181,22 @@ import express from 'express';
 
 let app = express();
 
-app.use((req, res) => {
-    let component = <App stores={stores} actions={actions}/>;
+app.use((req, res, next) => {
+    const component = <App stores={stores} actions={actions}/>;
 
     render(component).then(result => {
         res.send(result);
-    });
+    }, next);
 });
 ```
 
 ```javascript
 import { render } from 'react';
+
+const component = <App stores={stores} actions={actions}/>;
+const root = document.querySelector('#content');
+
+render(component, root);
 ```
 
 ## Patterns
@@ -313,7 +335,9 @@ var beep = action(function(message) {
 });
 
 const optimistic = map((message), beep);
-const actual = 
+const actual =
+
+flatMapError(e => startsWith(old, stream), stream);
 
 const stream = merge(optimistic, actual);
 ```

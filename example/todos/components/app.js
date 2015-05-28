@@ -33,9 +33,6 @@ class Todos extends Component {
 @send('stores', 'actions')
 class App extends Component {
 	render() {
-		// Do something dumb to test the render pipeline
-		actions.todos.create();
-
 		return <div>
 			<Todos/>
 			<a onClick={this.props.actions.todos.create}>Create Todo</a>
@@ -69,8 +66,16 @@ var state = {
 var TodoActions = require('../actions/todo.action');
 var todosStore = require('../stores/todo.store');
 
+var todoActions = new TodoActions();
+
+import { has, pick } from 'lodash';
+
+const derp = pick(todoActions, (value) => has(value, 'source'));
+
+const actionList = derp;
+
 var actions = {
-	todos: new TodoActions()
+	todos: todoActions
 };
 
 // Stores
@@ -78,17 +83,7 @@ var stores = {
 	todos: todosStore(actions.todos, state.todos)
 };
 
-// const state = mapValues(stores, (store) => store.dehydrate());
 
-
-/*
-const routes = <Route path='/' handler={App}>
-	<Route path='/about' handler={About}/>
-	<Route path='/user' handler={Users}>
-		<Route path='/:id' handler={User}/>
-	</Route>
-</Route>;
-*/
 
 console.log('actions', actions);
 console.log('stores', stores);
@@ -101,9 +96,6 @@ observe(function(todos) {
 	console.log('current todos', todos);
 }, stores.todos);
 
-
-//actions.todos.create();
-//actions.todos.create();
 
 import escape from 'script-escape';
 
@@ -120,11 +112,3 @@ function go() {
 }
 
 go();
-
-/*actions.todos.create();
-actions.todos.create();
-actions.todos.create();
-setTimeout(function() {
-	actions.todos.create();
-}, 19)
-*/
