@@ -25,16 +25,16 @@ module.exports = {
 	module: {
 		loaders: [{
 			test: /\.js$/,
-			include: /lib/,
-			loader: 'istanbul-instrumenter-loader'
-
-		}, {
-			test: /\.js$/,
 			exclude: /node_modules/,
 			loaders: [
 				'babel-loader?optional[]=runtime&optional[]=optimisation.react.constantElements&optional[]=es7.classProperties&optional[]=es7.decorators'
 			]
-		}]
+		}]/*,
+		postLoaders: [{
+			test: /\.js$/,
+			include: /lib/,
+			loader: 'istanbul-instrumenter-loader'
+		}]*/
 	},
 	externals: function(context, request, cb) {
 		if (node_modules.indexOf(request) !== -1) {
