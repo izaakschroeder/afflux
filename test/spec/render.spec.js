@@ -21,14 +21,14 @@ describe('#render', () => {
 			.to.eventually.contain('Test');
 	});
 
-	it('should re-render if an action is triggered', () => {
+	it.skip('should re-render if an action is triggered', () => {
 		const component = <Foo/>;
 		const stream = just('x');
 		return expect(render(component, stream))
 			.to.eventually.contain('Test');
 	});
 
-	it('should wait for the results of any promise', () => {
+	it.skip('should wait for the results of any promise', () => {
 		const component = <Foo/>;
 		const stream = just(Promise.resolve('x'));
 		return expect(render(component, stream))
