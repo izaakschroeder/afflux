@@ -23,10 +23,11 @@ image:http://img.shields.io/npm/dm/{name}.svg?style=flat[baz]
 
 TODO:
 
- * [ ] Tests
+ * [ ] More tests
  * [ ] Allow generators for actions (this allows for optimistic evaluation)
  * [ ] Pattern for optimistic evaluation
  * [ ] Comparisons
+ * [ ] Cleanup tests
 
 ## Overview
 
@@ -43,13 +44,17 @@ Example: "Create a todo with content 'x'" `actions.todos.create("x")`.
 
 *Stores*:
 
- * Are oracles - Call whenever you need to _know_ something.
+ * Are oracles - Observe whenever you need to _know_ something.
  * Are synchronous - React only to results of actions.
  * Create properties - Reduce actions to values consumed by views.
- * Domain specific - Encapsulate functionality specific to one domain.
+ * Are streams - You can observe the flow of all property changes.
 
 Example: "What are all the known todos?". `stores.todos`
 
+*State*:
+
+ * Is mutable
+ * Is time-varying
 
 TIP: What about the dispatcher? There is none. Everything is a stream. You can emulate all the functionality (including `waitFor`) of a dispatcher with stream combinators.
 
