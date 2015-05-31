@@ -1,13 +1,13 @@
 /** @jsx createElement */
 
 import render from '../../lib/render';
-import { repeat, create, empty, take } from 'most';
+import { create, empty, take, await } from 'most';
 import { Component, createElement } from 'react';
 import { once } from 'lodash';
 import Promise from 'bluebird';
 
 function publisher() {
-	var s = create((add) => s.add = add, () => s.add = null);
+	const s = create((add) => s.add = add, () => s.add = null);
 	return s;
 }
 
@@ -17,41 +17,55 @@ class Foo extends Component {
 		if (this.props.invoke) {
 			this.props.invoke();
 		}
-		return <div>Test</div>;
+		return <div>{this.props.state.value}</div>;
 	}
-}
-
-function just(e) {
-	return take(1, create((add) => add(e)));
 }
 
 describe('#render', () => {
 	it('should output a rendered component', () => {
-		return expect(render(<Foo/>, empty()))
-			.to.eventually.contain('Test');
+		return expect(render(<Foo state={{value: 'foo'}}/>, empty()))
+			.to.eventually.contain('foo');
 	});
 
-	// This is now an infinite loop
 	it('should re-render if an action is triggered', () => {
 		const stream = publisher();
-		const component = <Foo invoke={once(() => {
-			stream.add('x');
+		const state = { };
+		const component = <Foo state={state} invoke={once(() => {
+			stream.add('foo');
 		})}/>;
+		take(1, stream).observe((value) => state.value = value);
 		return expect(render(component, stream))
-			.to.eventually.contain('Test');
+			.to.eventually.contain('foo');
 	});
 
 	it('should wait for the results of any promise', () => {
-		const component = <Foo/>;
 		const stream = publisher();
+		const state = { };
+		const component = <Foo state={state} invoke={once(() => {
+			stream.add(Promise.resolve('foo'));
+		})}/>;
+		take(1, await(stream)).observe((value) => state.value = value);
 		return expect(render(component, stream))
-			.to.eventually.contain('Test');
+			.to.eventually.contain('foo');
 	});
 
-	it.skip('should respect the render limit', () => {
+	it('should respect the render limit', () => {
 		const stream = publisher();
-		const component = <Foo/>;
+		const state = { };
+		let i = 0;
+		const component = <Foo state={state} invoke={() => {
+			stream.add(i++);
+		}}/>;
+		take(9, stream).observe((value) => state.value = value);
 		return expect(render(component, stream))
-			.to.eventually.contain('<div>');
+			.to.eventually.contain('9');
+	});
+
+	it('should reject on error', () => {
+		const state = {};
+		const component = <Foo state={state} invoke={() => {
+			throw 'foo';
+		}}/>;
+		return expect(render(component, empty())).to.be.rejectedWith('foo');
 	});
 });
