@@ -3,10 +3,20 @@
 import render from '../../lib/render';
 import { repeat, create, empty, take } from 'most';
 import { Component, createElement } from 'react';
+import { once } from 'lodash';
 import Promise from 'bluebird';
 
+function publisher() {
+	var s = create((add) => s.add = add, () => s.add = null);
+	return s;
+}
+
 class Foo extends Component {
+
 	render() {
+		if (this.props.invoke) {
+			this.props.invoke();
+		}
 		return <div>Test</div>;
 	}
 }
@@ -21,22 +31,25 @@ describe('#render', () => {
 			.to.eventually.contain('Test');
 	});
 
-	it.skip('should re-render if an action is triggered', () => {
-		const component = <Foo/>;
-		const stream = just('x');
+	// This is now an infinite loop
+	it('should re-render if an action is triggered', () => {
+		const stream = publisher();
+		const component = <Foo invoke={once(() => {
+			stream.add('x');
+		})}/>;
 		return expect(render(component, stream))
 			.to.eventually.contain('Test');
 	});
 
-	it.skip('should wait for the results of any promise', () => {
+	it('should wait for the results of any promise', () => {
 		const component = <Foo/>;
-		const stream = just(Promise.resolve('x'));
+		const stream = publisher();
 		return expect(render(component, stream))
 			.to.eventually.contain('Test');
 	});
 
 	it.skip('should respect the render limit', () => {
-		const stream = repeat();
+		const stream = publisher();
 		const component = <Foo/>;
 		return expect(render(component, stream))
 			.to.eventually.contain('<div>');
