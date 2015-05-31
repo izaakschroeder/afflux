@@ -56,7 +56,7 @@ describe('#render', () => {
 		const component = <Foo state={state} invoke={() => {
 			stream.add(i++);
 		}}/>;
-		take(9, stream).observe((value) => state.value = value);
+		take(10, stream).observe((value) => state.value = value);
 		return expect(render(component, stream))
 			.to.eventually.contain('9');
 	});
