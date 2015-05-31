@@ -1,6 +1,6 @@
 {
 	"name": "afflux",
-	"version": "0.1.0",
+	"version": "0.1.0-alpha1",
 	"description": "Functional-reactive flux.",
 	"author": "Izaak Schroeder <izaak.schroeder@gmail.com>",
 	"keywords": [ "functional", "reactive", "flux", "react" ],
