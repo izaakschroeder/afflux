@@ -49,12 +49,17 @@ Example: "Create a todo with content 'x'" `actions.todos.create("x")`.
  * Create properties - Reduce actions to values consumed by views.
  * Are streams - You can observe the flow of all property changes.
 
-Example: "What are all the known todos?". `stores.todos`
+Example: "How can I observe all the changes to `todos`?". `stores.todos`
 
 *State*:
 
- * Is mutable
- * Is time-varying
+ * Is a singleton - Generally, there is only ever one state of the system.
+ * Is mutable – The state can change over time.
+ * Observes streams – The state changes in response to events on the stores.
+ * Is read-only – Make changes by calling actions instead.
+ * Is (de)hydratable - Save and restore state.
+
+Example: "What are the current todos?" `state.todos`
 
 TIP: What about the dispatcher? There is none. Everything is a stream. You can emulate all the functionality (including `waitFor`) of a dispatcher with stream combinators.
 
@@ -188,8 +193,8 @@ let app = express();
 
 app.use((req, res, next) => {
     const component = <App stores={stores} actions={actions}/>;
-
-    render(component).then(result => {
+    const dispatcher = merge(actions);
+    render(component, dispatcher).then(result => {
         res.send(result);
     }, next);
 });

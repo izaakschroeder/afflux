@@ -1,13 +1,8 @@
 
 import { action } from 'afflux';
+import { merge } from 'most';
 import Promise from 'bluebird';
-import { Record } from 'immutable';
-
-class Todo extends Record({ id: 0, complete: false, text: 'Hello World' }) {
-	get isAdmin() {
-		return this.id > 5;
-	}
-}
+import Todo from '../models/todo.model';
 
 function create(props) {
 	props = props || { };
@@ -19,6 +14,12 @@ export default class TodoActions {
 
 	constructor(store) {
 		this.store = store;
+		this.source = merge(
+			this.list,
+			this.create,
+			this.destroy,
+			this.update
+		).source;
 	}
 
 	@action

@@ -7,13 +7,13 @@ var path = require('path'),
 // Export the webpack configuration
 var config = {
 	entry: {
-		app: './todos/components/app'
+		app: path.join(__dirname, 'client')
 	},
 
 	output: {
 		filename: '[name].js',
 		publicPath: '/assets',
-		path: path.join(__dirname, 'todos', 'build'),
+		path: path.join(__dirname, 'build'),
 		chunkFilename: '[id].js'
 	},
 
@@ -23,7 +23,7 @@ var config = {
 			exclude: /node_modules/,
 			include: /afflux|react-beam|react-observer/,
 			loaders: [
-				'babel-loader?optional[]=runtime&optional[]=optimisation.react.constantElements&optional[]=es7.classProperties&optional[]=es7.decorators&optional[]=es7.exportExtensions&optional[]=es7.objectRestSpread&nonStandard=true'
+				'babel-loader?optional[]=runtime&optional[]=optimisation.react.constantElements&optional[]=es7.classProperties&optional[]=es7.decorators&optional[]=es7.exportExtensions&optional[]=es7.objectRestSpread'
 			]
 		}, {
 			test: /\.json5?$/i,
@@ -33,7 +33,7 @@ var config = {
 
 	resolve: {
 		root: [
-			path.join(__dirname, 'todos', 'components'),
+			path.join(__dirname, 'components'),
 			path.join(__dirname, 'node_modules'),
 		]
 	},
