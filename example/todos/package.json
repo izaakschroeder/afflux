@@ -1,17 +1,21 @@
 {
-	"name": "example",
+	"name": "afflux-example",
+	"version": "0.1.0",
+	"author": "Izaak Schroeder <izaak.schroeder@gmail.com>",
 	"dependencies": {
 		"babel-runtime": "^5.3.1",
 		"react": "^0.14.0-alpha1",
 		"immutable": "^3.7.2",
 		"afflux": "^0.1.0",
 		"react-beam": "^0.1.0",
-		"react-observer": "^0.1.0",
+		"react-observer": "^0.1.0-alpha1",
 		"most": "^0.14.0",
-		"script-escape": "^0.1.0"
+		"script-escape": "^0.1.0",
+		"express": "^5.0.0-alpha.1"
 	},
 	"devDependencies": {
 		"webpack": "^1.9.5",
+		"webpack-dev-middleware": "^1.0.11",
 		"babel-loader": "^5.0.0",
 		"babel-core": "^5.3.1",
 		"extract-stats-webpack-plugin": "^0.1.0"
